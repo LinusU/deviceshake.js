@@ -26,48 +26,48 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 (function () {
 
-    // initialize internal variables
-    var axa = 0;
-    var aya = 0;
-    var aza = 0;
+    // Options
+    var opts = {
+        violence: 4.0,     // single shake sensitivity
+        hf: 0.2,           // high-pass filter constant
+        shakethreshold: 5, // number of single shakes required to fire a shake event
+        debounce: 1000     // delay between shake events (in ms)
+    };
+
+    // Initialize internal variables
+    var axa = 0, aya = 0, aza = 0;
     var shakeaccum = 0;
     var prevtime = new Date();
     var cooldown = false;
 
-    var opts = {
-        // single shake sensitivity
-        violence: 4.0,
-
-        // high-pass filter constant
-        hf: 0.2,
-
-        // number of single shakes required to fire a shake event
-        shakethreshold: 6,
-
-        // delay between shake events (in ms)
-        debounce: 1000
-    };
-
+    // Listen for motion
     window.addEventListener('devicemotion', function (event) {
 
         if(cooldown) { return ; }
 
         // get acceleration values
-        var acc = event.accelerationIncludingGravity;
+        var acc = (function () {
 
-        // high pass-filter to remove gravity
-        // TODO detect and use gyro (no gravity) on supported devices
-        // http://iphonedevelopertips.com/user-interface/accelerometer-101.html
-        axa = acc.x - ((acc.x * opts.hf) + (axa * (1.0 - opts.hf)));
-        aya = acc.y - ((acc.y * opts.hf) + (aya * (1.0 - opts.hf)));
-        aza = acc.z - ((acc.z * opts.hf) + (aza * (1.0 - opts.hf)));
+            if(event.acceleration) { return event.acceleration; }
+
+            var acc = event.accelerationIncludingGravity;
+
+            // high pass-filter to remove gravity
+            // http://iphonedevelopertips.com/user-interface/accelerometer-101.html
+            axa = acc.x - ((acc.x * opts.hf) + (axa * (1.0 - opts.hf)));
+            aya = acc.y - ((acc.y * opts.hf) + (aya * (1.0 - opts.hf)));
+            aza = acc.z - ((acc.z * opts.hf) + (aza * (1.0 - opts.hf)));
+
+            return { x: acc.x - 2 * axa, y: acc.y - 2 * aya, z: acc.z - 2 * aza };
+
+        })();
 
         // detect single shake
         // http://discussions.apple.com/thread.jspa?messageID=8224655
         if(
-            Math.abs(acc.x - 2 * axa) > opts.violence * 1.5 ||
-            Math.abs(acc.y - 2 * aya) > opts.violence * 2 ||
-            Math.abs(acc.z - 2 * aza) > opts.violence * 3
+            Math.abs(acc.x) > opts.violence * 1.5 ||
+            Math.abs(acc.y) > opts.violence * 2 ||
+            Math.abs(acc.z) > opts.violence * 3
         ) {
 
             var curtime = new Date();
