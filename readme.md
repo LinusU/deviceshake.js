@@ -1,4 +1,3 @@
-
 # deviceshake event
 
 A javascript plugin to add a event `deviceshake` when the device is shaken.
@@ -9,7 +8,7 @@ A javascript plugin to add a event `deviceshake` when the device is shaken.
 
 This is the minimum code required to detect a shake:
 
-```js
+```html
 <script type="text/javascript" src="deviceshake.js"></script>
 <script type="text/javascript">
     window.addEventListener('deviceshake', function () {
